@@ -6,8 +6,8 @@
           error
         }"
       class="status-indicator"></div>
-    <router-view name="ulist" />
     <router-view name="uedit" />
+    <router-view name="ulist" />
   </div>
 </template>
 
@@ -39,8 +39,8 @@ export default {
   position: fixed;
   top: 5px;
   right: 5px;
-  width: 50px;
-  height: 50px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: green;
 }
@@ -51,5 +51,9 @@ export default {
 
 .status-indicator.error {
   background-color: red;
+}
+
+button {
+  cursor: pointer;
 }
 </style>

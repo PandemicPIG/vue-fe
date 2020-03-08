@@ -4,11 +4,9 @@
     <input type="text" v-model="email">
     <button
       type="button"
-      name="button"
       @click="clear()">CLEAR</button>
     <button
       type="button"
-      name="button"
       @click="saveUser()">SAVE</button>
   </div>
 </template>
@@ -79,5 +77,16 @@ export default {
 </script>
 
 <style scoped>
+.user-edit {
+  display: flex;
+  max-width: 500px;
+  justify-content: space-between;
+  padding: .5em;
+  background-color: #e5e5e5;
+}
 
+.user-edit * {
+  font-size: .9rem;
+  padding: .5em;
+}
 </style>

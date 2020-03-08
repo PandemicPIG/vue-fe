@@ -5,7 +5,12 @@
       :key="user.userId"
       class="user"
       @click="selectUser(user.userId)">
-      {{ user.name }} - {{ user.email }}
+      <div>
+        {{ user.name }}
+      </div>
+      <div>
+        {{ user.email }}
+      </div>
       <button
         type="button"
         @click="deleteUser(user.userId)">DELETE</button>
@@ -38,5 +43,20 @@ export default {
 </script>
 
 <style scoped>
+  .user {
+    cursor: pointer;
+    display: flex;
+    max-width: 500px;
+    justify-content: space-between;
+    padding: .5em;
+    border-bottom: 1px solid #e5e5e5;
+  }
 
+  .user:last-child {
+    border: none;
+  }
+
+  .user:hover {
+    background-color: #e5e5e5;
+  }
 </style>
