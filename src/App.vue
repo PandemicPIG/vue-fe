@@ -1,32 +1,55 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <div
+      :class="{
+          pending,
+          error
+        }"
+      class="status-indicator"></div>
+    <router-view name="ulist" />
+    <router-view name="uedit" />
   </div>
 </template>
+
+<script>
+import { mapGetters } from 'vuex'
+export default {
+  name: 'App',
+  data () {
+    return {}
+  },
+  computed: {
+    ...mapGetters({
+      pending: 'users/pending',
+      error: 'users/error'
+    })
+  }
+}
+</script>
 
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+  color: #304050;
 }
 
-#nav {
-  padding: 30px;
+.status-indicator {
+  position: fixed;
+  top: 5px;
+  right: 5px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: green;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.status-indicator.pending {
+  background-color: orange;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+.status-indicator.error {
+  background-color: red;
 }
 </style>
