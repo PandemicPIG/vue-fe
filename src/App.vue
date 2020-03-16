@@ -25,6 +25,18 @@ body {
   margin: 0;
 }
 
+button {
+  cursor: pointer;
+  width: 182px;
+  height: 50px;
+  box-sizing: border-box;
+  border: 1px solid rgb(30, 191, 165);
+  border-radius: 4px;
+  color: rgb(30, 191, 165);
+  font-size: 18px;
+  font-weight: bold;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -55,33 +67,5 @@ body {
 
 .mockup {
   width: 90vw;
-}
-
-button {
-  cursor: pointer;
-  width: 182px;
-  height: 50px;
-  box-sizing: border-box;
-  border: 1px solid rgb(30, 191, 165);
-  border-radius: 4px;
-  color: rgb(30, 191, 165);
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.action {
-  color: #fff;
-  background-color: rgb(30, 191, 165);
-}
-
-.disabled {
-  color: rgb(176, 191, 197);
-  border-color: rgb(176, 191, 197);
-  background-color: #fff;
-}
-
-.action.disabled {
-  color: #fff;
-  background-color: rgb(176, 191, 197);
 }
 </style>

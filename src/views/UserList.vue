@@ -1,14 +1,17 @@
 <template>
   <div class="user-list">
     <div
-      v-for="user in users"
-      :key="user.userId"
+      v-for="(user, index) in users"
+      :key="index"
       class="user">
-      <small class="status">Pending</small>
+      <small
+        v-if="user.pending"
+        class="status">Pending</small>
       <div class="user-data">
         <FieldInput
           class="data"
           :value="edited[`Name${user.userId}`] || user.name"
+          :disabled="user.pending"
           label="Name"
           errorMessage="Name must be at least 2 characters long"
           @input="v => updateUserInProgress(v, user, 'Name')"
@@ -16,6 +19,7 @@
         <FieldInput
           class="data"
           :value="edited[`Email${user.userId}`] || user.email"
+          :disabled="user.pending"
           label="Email"
           errorMessage="Invalid email"
           @input="v => updateUserInProgress(v, user, 'Email')"
@@ -24,10 +28,12 @@
       <div class="actions">
         <button
           type="button"
+          :disabled="user.pending"
           @click="deleteUser(user.userId)">DELETE</button>
         <button
-          class="action"
           type="button"
+          class="action"
+          :disabled="user.pending"
           @click="saveUpdatedUser(user.userId)">SAVE</button>
       </div>
     </div>
@@ -54,13 +60,13 @@ export default {
   computed: {
     ...mapGetters(['users']),
     ...mapGetters({
-      edited: 'users/edited'
+      edited: 'users/edited',
+      getUser: 'users/getUserByEmail'
     })
   },
   methods: {
     ...mapActions([
       'getUsers',
-      'selectUser',
       'updateUser',
       'deleteUser',
       'updateEditedUsers'
@@ -129,5 +135,15 @@ background: transparent;
 
 button {
   margin: 1.5em 0 0 1.5em;
+}
+
+.action {
+  color: #fff;
+  background-color: rgb(30, 191, 165);
+}
+
+.action:disabled {
+  color: #fff;
+  background-color: rgb(176, 191, 197);
 }
 </style>

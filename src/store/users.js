@@ -2,84 +2,99 @@ import Vue from 'vue'
 const namespace = 'users'
 const types = {
   SET: `${namespace}:SET`,
-  SET_SELECTED: `${namespace}:SET_SELECTED`,
+  UPDATE: `${namespace}:UPDATE`,
+  REMOVE: `${namespace}:REMOVE`,
   SET_EDITED: `${namespace}:SET_EDITED`,
   REMOVE_EDITED: `${namespace}:REMOVE_EDITED`,
-  SET_PENDING: `${namespace}:SET_PENDING`,
-  SET_SUCCESS: `${namespace}:SET_SUCCESS`,
-  SET_FAILURE: `${namespace}:SET_FAILURE`,
   EMPTY: `${namespace}/empty`,
-  ERROR: `${namespace}/error`,
-  PENDING: `${namespace}/pending`,
-  SELECTED: `${namespace}/selected`,
-  EDITED: `${namespace}/edited`
+  EDITED: `${namespace}/edited`,
+  GET_USER_BY_EMAIL: `${namespace}/getUserByEmail`
 }
 
 const state = {
   data: [],
-  selected: null,
   edited: {},
-  pending: true,
-  error: false
+  error: null
 }
 
 const getters = {
   [namespace]: () => state.data.sort((a, b) => a.userId - b.userId),
-  [types.SELECTED]: () => state.data.find(a => a.userId === state.selected) || {},
+  [types.GET_USER_BY_EMAIL]: () => email => state.data.find(user => user.email === email),
   [types.EDITED]: () => state.edited,
-  [types.EMPTY]: () => !state.data.length && !state.pending,
-  [types.PENDING]: () => state.pending ? 'loading' : false,
-  [types.ERROR]: () => state.error
+  [types.EMPTY]: () => !state.data.length
 }
 
 const actions = {
   getUsers ({ commit }) {
-    commit(types.SET_PENDING)
-    fetch('http://localhost:8081/api').then(res => res.json()).then(json => {
+    fetch('http://localhost:8081/api').then(res => {
+      if (res.status !== 200) {
+        throw new Error('Server error')
+      } else {
+        return res.json()
+      }
+    }).then(json => {
       commit(types.SET, json.data)
-      commit(types.SET_SUCCESS)
-    }).catch(() => {
-      commit(types.SET_FAILURE)
+    }).catch(e => {
+      console.error(e)
     })
   },
-  selectUser ({ commit }, userId) {
-    commit(types.SET_SELECTED, userId)
-  },
   createUser ({ commit, dispatch }, user) {
-    commit(types.SET_PENDING)
+    commit(types.UPDATE, { user, pending: true })
     fetch('http://localhost:8081/api', {
       method: 'POST',
       body: JSON.stringify(user)
     }).then(res => {
-      commit(types.SET_SUCCESS)
-      dispatch('getUsers')
-    }).catch(() => {
-      commit(types.SET_FAILURE)
+      if (res.status !== 201) {
+        return res.json().then(err => {
+          throw new Error(err.message)
+        })
+      } else {
+        dispatch('getUsers')
+      }
+    }).catch(e => {
+      commit(types.REMOVE, user)
+      throw e
     })
   },
-  updateUser ({ commit, dispatch }, user) {
-    commit(types.SET_PENDING)
-    return fetch('http://localhost:8081/api', {
+  updateUser ({ commit, dispatch, getters }, user) {
+    const oldUser = getters.users.find(u => u.userId === user.userId)
+    commit(types.UPDATE, { user, pending: true })
+
+    fetch('http://localhost:8081/api', {
       method: 'PATCH',
       body: JSON.stringify(user)
     }).then(res => {
-      commit(types.REMOVE_EDITED, user.userId)
-      commit(types.SET_SUCCESS)
-      dispatch('getUsers')
-    }).catch(() => {
-      commit(types.SET_FAILURE)
+      if (res.status !== 200) {
+        return res.json().then(err => {
+          throw new Error(err.message)
+        })
+      } else {
+        commit(types.REMOVE_EDITED, user.userId)
+        dispatch('getUsers')
+      }
+    }).catch(e => {
+      commit(types.UPDATE, { user: oldUser })
+      throw e
     })
   },
-  deleteUser ({ commit, dispatch }, userId) {
-    commit(types.SET_PENDING)
+  deleteUser ({ commit, dispatch, getters }, userId) {
+    const oldUser = getters.users.find(u => u.userId === userId)
+    commit(types.REMOVE, { userId })
+
     fetch('http://localhost:8081/api', {
       method: 'DELETE',
       body: JSON.stringify({ userId })
     }).then(res => {
-      commit(types.SET_SUCCESS)
-      dispatch('getUsers')
-    }).catch(() => {
-      commit(types.SET_FAILURE)
+      if (res.status !== 200) {
+        return res.json().then(err => {
+          throw new Error(err.message)
+        })
+      } else {
+        dispatch('getUsers')
+      }
+    }).catch(e => {
+      commit(types.UPDATE, { user: oldUser })
+      throw e
     })
   },
   updateEditedUsers ({ commit }, data) {
@@ -91,11 +106,23 @@ const mutations = {
   [types.SET] (state, array) {
     state.data = [...array]
   },
-  [types.SET_SELECTED] (state, id) {
-    Vue.set(state, 'selected', id)
+  [types.UPDATE] (state, { user, pending }) {
+    state.data = [
+      ...state.data.filter(u => u.userId !== user.userId),
+      {
+        ...user,
+        pending
+      }
+    ]
+  },
+  [types.REMOVE] (state, user) {
+    if (user.userId) {
+      state.data = [...state.data.filter(u => u.userId !== user.userId)]
+    } else {
+      state.data = [...state.data.filter(u => u.email !== user.email)]
+    }
   },
   [types.SET_EDITED] (state, data) {
-    // needs changing object reference for reactivity
     Vue.set(state, 'edited', {
       ...state.edited,
       [data.key]: data.value
@@ -104,18 +131,6 @@ const mutations = {
   [types.REMOVE_EDITED] (state, id) {
     delete state.edited[`Name${id}`]
     delete state.edited[`Email${id}`]
-  },
-  [types.SET_PENDING] (state) {
-    Vue.set(state, 'pending', true)
-    Vue.set(state, 'error', false)
-  },
-  [types.SET_SUCCESS] (state) {
-    Vue.set(state, 'pending', false)
-    Vue.set(state, 'error', false)
-  },
-  [types.SET_FAILURE] (state) {
-    Vue.set(state, 'pending', false)
-    Vue.set(state, 'error', true)
   }
 }
 

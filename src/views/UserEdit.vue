@@ -13,14 +13,12 @@
       v-model="email"
       :validator="validEmail"
       placeholder="Email"
-      errorMessage="Invalid email"
+      :errorMessage="emailInputErrorMessage"
     />
     <button
       class="action"
       type="button"
-      :class="{
-          disabled: !(validName(name) && validEmail(email))
-        }"
+      :disabled="!(validName(name) && validEmail(email))"
       @click="saveUser()">Add user</button>
   </div>
 </template>
@@ -42,8 +40,15 @@ export default {
   },
   computed: {
     ...mapGetters({
-      selected: 'users/selected'
-    })
+      users: 'users',
+      getUser: 'users/getUserByEmail'
+    }),
+    userExists () {
+      return !!this.getUser(this.email)
+    },
+    emailInputErrorMessage () {
+      return this.userExists ? 'User already exists for email' : 'Invalid email'
+    }
   },
   methods: {
     ...mapActions([
@@ -60,7 +65,7 @@ export default {
     },
     validEmail (email) {
       // TODO add basic email validation
-      return email && email.length > 1
+      return email && !this.userExists && email.length > 1
     },
     validName (name) {
       return name && name.length > 1
@@ -89,5 +94,15 @@ export default {
 
 button {
   margin-top: 1.5em;
+}
+
+.action {
+  color: #fff;
+  background-color: rgb(30, 191, 165);
+}
+
+.action:disabled {
+  color: #fff;
+  background-color: rgb(176, 191, 197);
 }
 </style>

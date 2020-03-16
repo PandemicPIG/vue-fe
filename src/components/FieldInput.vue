@@ -1,14 +1,14 @@
 <template>
   <label
     class="field-input"
-    :style="{
-        ...(label ? {paddingTop: '2em'} : {})
-      }">
+    :class="{'field-input-with-label': label}"
+  >
     <span class="field-label" v-if="label">{{ label }}</span>
     <input
       class="field-text"
       type="text"
       v-model="field"
+      :disabled="disabled"
       :placeholder="placeholder"
       @blur="evaluate = true"
       @focus="evaluate = false">
@@ -39,6 +39,10 @@ export default {
     errorMessage: {
       type: String,
       default: 'Please enter a valid input'
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -67,6 +71,11 @@ export default {
   width: 100%;
   padding-top: 1.25em;
 }
+
+.field-input-with-label {
+  padding-top: 2em;
+}
+
 .field-label {
   position: absolute;
   font-size: 0.75em;
