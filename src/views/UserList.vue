@@ -3,60 +3,131 @@
     <div
       v-for="user in users"
       :key="user.userId"
-      class="user"
-      @click="selectUser(user.userId)">
-      <div>
-        {{ user.name }}
+      class="user">
+      <small class="status">Pending</small>
+      <div class="user-data">
+        <FieldInput
+          class="data"
+          :value="edited[`Name${user.userId}`] || user.name"
+          label="Name"
+          errorMessage="Name must be at least 2 characters long"
+          @input="v => updateUserInProgress(v, user, 'Name')"
+        />
+        <FieldInput
+          class="data"
+          :value="edited[`Email${user.userId}`] || user.email"
+          label="Email"
+          errorMessage="Invalid email"
+          @input="v => updateUserInProgress(v, user, 'Email')"
+        />
       </div>
-      <div>
-        {{ user.email }}
+      <div class="actions">
+        <button
+          type="button"
+          @click="deleteUser(user.userId)">DELETE</button>
+        <button
+          class="action"
+          type="button"
+          @click="saveUpdatedUser(user.userId)">SAVE</button>
       </div>
-      <button
-        type="button"
-        @click="deleteUser(user.userId)">DELETE</button>
     </div>
   </div>
-
 </template>
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import FieldInput from '@/components/FieldInput'
 export default {
   name: 'UserList',
+  components: {
+    FieldInput
+  },
   data () {
-    return {}
+    return {
+      name: '',
+      email: ''
+    }
   },
   mounted () {
     this.getUsers()
   },
   computed: {
-    ...mapGetters(['users'])
+    ...mapGetters(['users']),
+    ...mapGetters({
+      edited: 'users/edited'
+    })
   },
   methods: {
     ...mapActions([
       'getUsers',
       'selectUser',
-      'deleteUser'
-    ])
+      'updateUser',
+      'deleteUser',
+      'updateEditedUsers'
+    ]),
+    updateUserInProgress (input, user, identifier) {
+      this.updateEditedUsers({
+        key: `${identifier}${user.userId}`,
+        value: input
+      })
+    },
+    saveUpdatedUser (id) {
+      this.updateUser({
+        userId: id,
+        ...(this.edited[`Name${id}`] ? {
+          name: this.edited[`Name${id}`]
+        } : {}),
+        ...(this.edited[`Email${id}`] ? {
+          email: this.edited[`Email${id}`]
+        } : {})
+      })
+    }
   }
 }
 </script>
 
 <style scoped>
-  .user {
-    cursor: pointer;
-    display: flex;
-    max-width: 500px;
-    justify-content: space-between;
-    padding: .5em;
-    border-bottom: 1px solid #e5e5e5;
-  }
+.user-list {
+padding: 0;
+background: transparent;
+}
 
-  .user:last-child {
-    border: none;
-  }
+.user {
+  padding: 1.5em 3rem;
+  margin-bottom: 2.5em;
+  background-color: #fff;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
 
-  .user:hover {
-    background-color: #e5e5e5;
-  }
+.user-data {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.data {
+  width: 49%;
+}
+
+.status {
+  position: absolute;
+  top: 0.625em;
+  left: 1.25em;
+  font-size: 0.75em;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+button {
+  margin: 1.5em 0 0 1.5em;
+}
 </style>
