@@ -31,7 +31,8 @@ const getters = {
     return user.email && state.data.find(u => u.email === user.email.toLowerCase() && u.userId !== user.userId)
   },
   [types.VALID_EMAIL]: (_, getters) => user => {
-    return user.email && user.email.length > 4 && !getters[types.USER_EXISTS](user)
+    /* eslint-disable-next-line no-useless-escape */
+    return user.email && user.email.match(/[^@]+@[^\.]+\..+/) && !getters[types.USER_EXISTS](user)
   },
   [types.VALID_NAME]: () => name => name && name.length > 1,
   [types.EMAIL_ERROR_MESSAGE]: (_, getters) => user => {

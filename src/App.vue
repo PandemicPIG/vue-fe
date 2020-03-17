@@ -100,6 +100,7 @@ button:disabled {
   color: #fff;
   font-size: 18px;
   font-weight: bold;
+  z-index: 1;
 }
 
 .success-banner, .error-banner {
