@@ -134,6 +134,7 @@ background: transparent;
   top: 0.625em;
   left: 1.25em;
   font-size: 0.75em;
+  color: rgb(207, 16, 25);
 }
 
 .actions {
