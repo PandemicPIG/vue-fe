@@ -1,5 +1,19 @@
 <template>
   <div id="app">
+    <div class="banners">
+      <div
+        v-if="success"
+        class="success-banner"
+        @click="removeSuccess">
+        {{ success }}
+      </div>
+      <div
+        v-if="error"
+        class="error-banner"
+        @click="removeError">
+        {{ error }}
+      </div>
+    </div>
     <router-view
       class="view"
       name="uedit" />
@@ -11,10 +25,23 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'App',
   data () {
     return {}
+  },
+  computed: {
+    ...mapGetters({
+      error: 'users/error',
+      success: 'users/success'
+    })
+  },
+  methods: {
+    ...mapActions([
+      'removeError',
+      'removeSuccess'
+    ])
   }
 }
 </script>
@@ -27,7 +54,7 @@ body {
 
 button {
   cursor: pointer;
-  width: 182px;
+  min-width: 182px;
   height: 50px;
   box-sizing: border-box;
   border: 1px solid rgb(30, 191, 165);
@@ -42,15 +69,11 @@ button {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #304050;
-  /* TODO re-evaluate */
   display: flex;
   flex-grow: 1;
   flex-wrap: wrap;
   justify-content: center;
   background-color: #fafafa;
-  /* display: flex;
-  justify-content: center;
-  flex-wrap: wrap; */
 }
 
 .view, .title {
@@ -65,7 +88,36 @@ button {
   padding: 3rem;
 }
 
-.mockup {
-  width: 90vw;
+.banners {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.success-banner, .error-banner {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  padding: .5em;
+  text-align: center;
+}
+
+.success-banner:after, .error-banner:after {
+  content: 'x';
+  position: absolute;
+  right: 1em;
+  top: .5em;
+}
+
+.success-banner {
+  background-color: rgb(30, 191, 30);
+}
+
+.error-banner {
+  background-color: rgb(191, 30, 30);
 }
 </style>

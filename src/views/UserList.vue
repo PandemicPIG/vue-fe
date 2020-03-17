@@ -12,6 +12,7 @@
           class="data"
           :value="edited[`Name${user.userId}`] || user.name"
           :disabled="user.pending"
+          :validator="validName"
           label="Name"
           errorMessage="Name must be at least 2 characters long"
           @input="v => updateUserInProgress(v, user, 'Name')"
@@ -20,8 +21,9 @@
           class="data"
           :value="edited[`Email${user.userId}`] || user.email"
           :disabled="user.pending"
+          :validator="email => validEmail({ ...user, email })"
           label="Email"
-          errorMessage="Invalid email"
+          :errorMessage="emailInputErrorMessage({ ...user, email: edited[`Email${user.userId}`] })"
           @input="v => updateUserInProgress(v, user, 'Email')"
         />
       </div>
@@ -33,7 +35,7 @@
         <button
           type="button"
           class="action"
-          :disabled="user.pending"
+          :disabled="disableButton(user, edited[`Name${user.userId}`], edited[`Email${user.userId}`])"
           @click="saveUpdatedUser(user.userId)">SAVE</button>
       </div>
     </div>
@@ -61,7 +63,9 @@ export default {
     ...mapGetters(['users']),
     ...mapGetters({
       edited: 'users/edited',
-      getUser: 'users/getUserByEmail'
+      validEmail: 'users/validEmail',
+      validName: 'users/validName',
+      emailInputErrorMessage: 'users/emailErrorMessage'
     })
   },
   methods: {
@@ -71,6 +75,11 @@ export default {
       'deleteUser',
       'updateEditedUsers'
     ]),
+    disableButton (user, newName, newEmail) {
+      return user.pending ||
+        (newName && !this.validName(newName)) ||
+        (newEmail && !this.validEmail({ ...user, email: newEmail }))
+    },
     updateUserInProgress (input, user, identifier) {
       this.updateEditedUsers({
         key: `${identifier}${user.userId}`,
@@ -137,6 +146,11 @@ button {
   margin: 1.5em 0 0 1.5em;
 }
 
+button:disabled {
+  border-color: rgb(176, 191, 197);
+  color: rgb(176, 191, 197);
+}
+
 .action {
   color: #fff;
   background-color: rgb(30, 191, 165);
@@ -145,5 +159,6 @@ button {
 .action:disabled {
   color: #fff;
   background-color: rgb(176, 191, 197);
+  border-color: rgb(176, 191, 197);
 }
 </style>

@@ -6,22 +6,41 @@ const types = {
   REMOVE: `${namespace}:REMOVE`,
   SET_EDITED: `${namespace}:SET_EDITED`,
   REMOVE_EDITED: `${namespace}:REMOVE_EDITED`,
+  SET_ERROR: `${namespace}:SET_ERROR`,
+  SET_SUCCESS: `${namespace}:SET_SUCCESS`,
   EMPTY: `${namespace}/empty`,
+  ERROR: `${namespace}/error`,
+  SUCCESS: `${namespace}/success`,
   EDITED: `${namespace}/edited`,
-  GET_USER_BY_EMAIL: `${namespace}/getUserByEmail`
+  USER_EXISTS: `${namespace}/userExists`,
+  VALID_EMAIL: `${namespace}/validEmail`,
+  VALID_NAME: `${namespace}/validName`,
+  EMAIL_ERROR_MESSAGE: `${namespace}/emailErrorMessage`
 }
 
 const state = {
   data: [],
   edited: {},
-  error: null
+  error: null,
+  success: null
 }
 
 const getters = {
   [namespace]: () => state.data.sort((a, b) => a.userId - b.userId),
-  [types.GET_USER_BY_EMAIL]: () => email => state.data.find(user => user.email === email),
+  [types.USER_EXISTS]: () => user => {
+    return user.email && state.data.find(u => u.email === user.email.toLowerCase() && u.userId !== user.userId)
+  },
+  [types.VALID_EMAIL]: (_, getters) => user => {
+    return user.email && user.email.length > 4 && !getters[types.USER_EXISTS](user)
+  },
+  [types.VALID_NAME]: () => name => name && name.length > 1,
+  [types.EMAIL_ERROR_MESSAGE]: (_, getters) => user => {
+    return getters[types.USER_EXISTS](user) ? 'User already exists for email' : 'Invalid email'
+  },
   [types.EDITED]: () => state.edited,
-  [types.EMPTY]: () => !state.data.length
+  [types.EMPTY]: () => !state.data.length,
+  [types.ERROR]: () => state.error,
+  [types.SUCCESS]: () => state.success
 }
 
 const actions = {
@@ -35,7 +54,8 @@ const actions = {
     }).then(json => {
       commit(types.SET, json.data)
     }).catch(e => {
-      console.error(e)
+      commit(types.SET_ERROR, e.message)
+      throw e
     })
   },
   createUser ({ commit, dispatch }, user) {
@@ -49,10 +69,12 @@ const actions = {
           throw new Error(err.message)
         })
       } else {
+        commit(types.SET_SUCCESS, 'User added succesfully')
         dispatch('getUsers')
       }
     }).catch(e => {
       commit(types.REMOVE, user)
+      commit(types.SET_ERROR, e.message)
       throw e
     })
   },
@@ -70,10 +92,12 @@ const actions = {
         })
       } else {
         commit(types.REMOVE_EDITED, user.userId)
+        commit(types.SET_SUCCESS, 'User updated succesfully')
         dispatch('getUsers')
       }
     }).catch(e => {
       commit(types.UPDATE, { user: oldUser })
+      commit(types.SET_ERROR, e.message)
       throw e
     })
   },
@@ -90,21 +114,28 @@ const actions = {
           throw new Error(err.message)
         })
       } else {
-        dispatch('getUsers')
+        commit(types.SET_SUCCESS, 'User deleted succesfully')
       }
     }).catch(e => {
       commit(types.UPDATE, { user: oldUser })
+      commit(types.SET_ERROR, e.message)
       throw e
     })
   },
   updateEditedUsers ({ commit }, data) {
     commit(types.SET_EDITED, data)
+  },
+  removeError ({ commit }) {
+    commit(types.SET_ERROR, null)
+  },
+  removeSuccess ({ commit }) {
+    commit(types.SET_SUCCESS, null)
   }
 }
 
 const mutations = {
-  [types.SET] (state, array) {
-    state.data = [...array]
+  [types.SET] (state, data) {
+    state.data = [...Object.values(data)]
   },
   [types.UPDATE] (state, { user, pending }) {
     state.data = [
@@ -131,6 +162,12 @@ const mutations = {
   [types.REMOVE_EDITED] (state, id) {
     delete state.edited[`Name${id}`]
     delete state.edited[`Email${id}`]
+  },
+  [types.SET_ERROR] (state, message) {
+    Vue.set(state, 'error', message)
+  },
+  [types.SET_SUCCESS] (state, message) {
+    Vue.set(state, 'success', message)
   }
 }
 
