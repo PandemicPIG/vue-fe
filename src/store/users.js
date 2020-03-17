@@ -96,6 +96,7 @@ const actions = {
         dispatch('getUsers')
       }
     }).catch(e => {
+      commit(types.REMOVE_EDITED, user.userId)
       commit(types.UPDATE, { user: oldUser })
       commit(types.SET_ERROR, e.message)
       throw e

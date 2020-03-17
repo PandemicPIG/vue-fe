@@ -34,8 +34,8 @@ export default {
   },
   data () {
     return {
-      name: null,
-      email: null
+      name: undefined,
+      email: undefined
     }
   },
   computed: {
@@ -60,8 +60,8 @@ export default {
         name: this.name
       })
 
-      this.name = null
-      this.email = null
+      this.name = undefined
+      this.email = undefined
     }
   }
 }

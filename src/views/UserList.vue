@@ -10,7 +10,7 @@
       <div class="user-data">
         <FieldInput
           class="data"
-          :value="edited[`Name${user.userId}`] || user.name"
+          :value="edited[`Name${user.userId}`] === undefined ? user.name : edited[`Name${user.userId}`]"
           :disabled="user.pending"
           :validator="validName"
           label="Name"
@@ -19,7 +19,7 @@
         />
         <FieldInput
           class="data"
-          :value="edited[`Email${user.userId}`] || user.email"
+          :value="edited[`Email${user.userId}`] === undefined ? user.email : edited[`Email${user.userId}`]"
           :disabled="user.pending"
           :validator="email => validEmail({ ...user, email })"
           label="Email"
@@ -77,8 +77,8 @@ export default {
     ]),
     disableButton (user, newName, newEmail) {
       return user.pending ||
-        (newName && !this.validName(newName)) ||
-        (newEmail && !this.validEmail({ ...user, email: newEmail }))
+        (newName !== undefined && !this.validName(newName)) ||
+        (newEmail !== undefined && !this.validEmail({ ...user, email: newEmail }))
     },
     updateUserInProgress (input, user, identifier) {
       this.updateEditedUsers({

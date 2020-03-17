@@ -12,7 +12,7 @@
       :placeholder="placeholder"
       @blur="evaluate = true"
       @focus="evaluate = false">
-    <span v-if="evaluate && field && !validator(field)">{{ errorMessage }}</span>
+    <span v-if="evaluate && field !== undefined && !validator(field)">{{ errorMessage }}</span>
   </label>
 </template>
 
